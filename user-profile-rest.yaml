@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-profile-rest
+  labels:
+    app: user-profile-rest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-profile-rest
+  template:
+    metadata:
+      labels:
+        app: user-profile-rest
+    spec:
+      containers:
+      - name: user-profile-rest
+        image: nikhileshnike/user-profile-rest:1.0
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: app-port
+          periodSeconds: 1
+        startupProbe:
+          httpGet:
+            path: /status
+            port: app-port
+          initialDelaySeconds: 30
+        ports:
+        - name: app-port
+          containerPort: 3000
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "0.5"
+        env:
+        - name: MONGO_URL
+          valueFrom:
+            configMapKeyRef:
+              name: mongo-config
+              key: mongo-url
+        - name: MONGO_USER
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: mongo-user
+        - name: MONGO_PASS
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: mongo-password 
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-profile-rest
+spec:
+  type: NodePort
+  selector:
+    app: user-profile-rest
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+      nodePort: 30200

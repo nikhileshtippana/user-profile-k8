@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: user-profile-rest
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: userprofilerest.localdev.me
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: user-profile-rest
+            port:
+              number: 3000
